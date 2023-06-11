@@ -5,6 +5,7 @@
 #include<ctime>
 #include<math.h> 
 #include<cstring>
+#include<random>
 using namespace std;
 
 int n = 0; //要生成的数独终局个数 
@@ -55,9 +56,7 @@ void transform(double* temp1)  //编码
 
 void Initial()  //初始化第一行的数独 
 {
-	srand(time(NULL)); // 使用当前时间作为种子
-	a[1][1] = (rand() % 9) + '1'; //左上角的数字为随机数
-
+	a[1][1] = 8 + '0';
 	srand((unsigned)(time(NULL) + rand()));
 	for (int j = 1; j <= 8; j++)
 		list[j] = Rand(low, high); //生成九个随机浮点数 
@@ -129,7 +128,9 @@ void Produce_Sudoku(int DEMAND)
 				char s1[15], s2[15];
 				strcpy_s(s1, sizeof(s1), move1[i]);
 				strcpy_s(s2, sizeof(s2), move2[j]);
-				strcpy_s(move_boss, sizeof(move_boss), strcat(strcat(s1, s2), move3[k]));
+				strcat_s(s1, sizeof(s1), s2);
+				strcat_s(s1, sizeof(s1), move3[k]);
+				strcpy_s(move_boss, sizeof(move_boss), s1);
 				To_int(); //将字符型序列转换为int型 
 				for (int q = 2; q <= 9; q++) //逐行生成一个数独矩阵 
 				{
@@ -216,20 +217,22 @@ int main(int argc, char* argv[])
 	{
 		cout << "您的指令有误！请在控制台使用正确的指令来运行程序。" << endl;
 		cout << "命令行输入shudu.exe -c N可以生成N个数独终局文件到shudu.txt中" << endl;
-		cout << "命令行输入shudu.exe -s file_path可以生成对数独文件file_path的解到solve.txt中" << endl;
+		cout << "命令行输入shudu.exe -s file_path可以生成对数独文件file_path的解到answer.txt中" << endl;
 		return 0;
 	}
-	FILE* fp1 = fopen(argv[2], "r");
+	FILE* fp1;
+	errno_t err = fopen_s(&fp1, argv[2], "r");
+
 	if (strcmp(argv[1], "-s") == 0 && fp1 == NULL)
 	{
 		cout << "您的指令有误！请在控制台使用正确的指令来运行程序。" << endl;
 		cout << "命令行输入shudu.exe -c N可以生成N个数独终局文件到shudu.txt中" << endl;
-		cout << "命令行输入shudu.exe -s file_path可以生成对数独文件file_path的解到solve.txt中" << endl;
+		cout << "命令行输入shudu.exe -s file_path可以生成对数独文件file_path的解到answer.txt中" << endl;
 		return 0;
 	}
 	if (argc == 3 && strcmp(argv[1], "-c") == 0)
 	{
-		int len = strlen(argv[2]); //将命令行字符串转换为整数 
+		int len = static_cast<int>(strlen(argv[2]));//将命令行字符串转换为整数 
 		for (int i = 0; i < len; i++)
 		{
 			if (argv[2][i] >= '0' && argv[2][i] <= '9')
@@ -301,7 +304,7 @@ int main(int argc, char* argv[])
 	else {
 		cout << "您的指令有误！请在控制台使用正确的指令来运行程序。" << endl;
 		cout << "命令行输入shudu.exe -c N可以生成N个数独终局文件到shudu.txt中" << endl;
-		cout << "命令行输入shudu.exe -s file_path可以生成对数独文件file_path的解到solve.txt中" << endl;
+		cout << "命令行输入shudu.exe -s file_path可以生成对数独文件file_path的解到answer.txt中" << endl;
 	}
 	return 0;
 }

@@ -1,0 +1,456 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+        <meta charset="utf-8"/>
+	    <title>xstddef</title>
+	    <link href="../../third-party/google-code-prettify/prettify-CppCoverage.css" type="text/css" rel="stylesheet" />
+	    <script type="text/javascript" src="../../third-party/google-code-prettify/prettify.js"></script>
+	</head>
+    <body onload="prettyPrint()">
+        <h4></h4>
+        <pre class="prettyprint lang-cpp linenums">
+// xstddef internal header (core)
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _XSTDDEF_
+#define _XSTDDEF_
+#include &lt;yvals_core.h&gt;
+#if _STL_COMPILER_PREPROCESSOR
+#include &lt;cstddef&gt;
+#include &lt;cstdlib&gt;
+#include &lt;initializer_list&gt;
+#include &lt;xtr1common&gt;
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+template &lt;class&gt;
+// false value attached to a dependent name (for static_assert)
+_INLINE_VAR constexpr bool _Always_false = false;
+
+// stuff from &lt;functional&gt;
+#if _HAS_AUTO_PTR_ETC
+_EXPORT_STD template &lt;class _Arg, class _Result&gt;
+struct unary_function { // base class for unary functions
+    using argument_type = _Arg;
+    using result_type   = _Result;
+};
+
+_EXPORT_STD template &lt;class _Arg1, class _Arg2, class _Result&gt;
+struct binary_function { // base class for binary functions
+    using first_argument_type  = _Arg1;
+    using second_argument_type = _Arg2;
+    using result_type          = _Result;
+};
+#endif // _HAS_AUTO_PTR_ETC
+
+#pragma warning(push)
+#pragma warning(disable : 5215) // '%s' a function parameter with a volatile qualified type is deprecated in C++20
+#pragma warning(disable : 5216) // '%s' a volatile qualified return type is deprecated in C++20
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif // __clang__
+
+template &lt;class _Ty&gt;
+_NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
+// _Fake_copy_init&lt;T&gt;(E):
+// (1) has type T [decay_t&lt;decltype((E))&gt; if T is deduced],
+// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
+// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+
+#pragma warning(pop)
+
+_EXPORT_STD template &lt;class _Ty = void&gt;
+struct plus {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
+
+    _NODISCARD constexpr _Ty operator()(const _Ty&amp; _Left, const _Ty&amp; _Right) const {
+        return _Left + _Right;
+    }
+};
+
+_EXPORT_STD template &lt;class _Ty = void&gt;
+struct minus {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
+
+    _NODISCARD constexpr _Ty operator()(const _Ty&amp; _Left, const _Ty&amp; _Right) const {
+        return _Left - _Right;
+    }
+};
+
+_EXPORT_STD template &lt;class _Ty = void&gt;
+struct multiplies {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
+
+    _NODISCARD constexpr _Ty operator()(const _Ty&amp; _Left, const _Ty&amp; _Right) const {
+        return _Left * _Right;
+    }
+};
+
+_EXPORT_STD template &lt;class _Ty = void&gt;
+struct equal_to {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
+
+    _NODISCARD constexpr bool operator()(const _Ty&amp; _Left, const _Ty&amp; _Right) const
+        noexcept(noexcept(_Fake_copy_init&lt;bool&gt;(_Left == _Right))) /* strengthened */ {
+        return _Left == _Right;
+    }
+};
+
+_EXPORT_STD template &lt;class _Ty = void&gt;
+struct not_equal_to {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
+
+    _NODISCARD constexpr bool operator()(const _Ty&amp; _Left, const _Ty&amp; _Right) const
+        noexcept(noexcept(_Fake_copy_init&lt;bool&gt;(_Left != _Right))) /* strengthened */ {
+        return _Left != _Right;
+    }
+};
+
+_EXPORT_STD template &lt;class _Ty = void&gt;
+struct greater {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
+
+    _NODISCARD constexpr bool operator()(const _Ty&amp; _Left, const _Ty&amp; _Right) const
+        noexcept(noexcept(_Fake_copy_init&lt;bool&gt;(_Left &gt; _Right))) /* strengthened */ {
+        return _Left &gt; _Right;
+    }
+};
+
+_EXPORT_STD template &lt;class _Ty = void&gt;
+struct less {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
+
+    _NODISCARD constexpr bool operator()(const _Ty&amp; _Left, const _Ty&amp; _Right) const
+        noexcept(noexcept(_Fake_copy_init&lt;bool&gt;(_Left &lt; _Right))) /* strengthened */ {
+        return _Left &lt; _Right;
+    }
+};
+
+_EXPORT_STD template &lt;class _Ty = void&gt;
+struct greater_equal {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
+
+    _NODISCARD constexpr bool operator()(const _Ty&amp; _Left, const _Ty&amp; _Right) const
+        noexcept(noexcept(_Fake_copy_init&lt;bool&gt;(_Left &gt;= _Right))) /* strengthened */ {
+        return _Left &gt;= _Right;
+    }
+};
+
+_EXPORT_STD template &lt;class _Ty = void&gt;
+struct less_equal {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
+
+    _NODISCARD constexpr bool operator()(const _Ty&amp; _Left, const _Ty&amp; _Right) const
+        noexcept(noexcept(_Fake_copy_init&lt;bool&gt;(_Left &lt;= _Right))) /* strengthened */ {
+        return _Left &lt;= _Right;
+    }
+};
+
+template &lt;&gt;
+struct plus&lt;void&gt; {
+    template &lt;class _Ty1, class _Ty2&gt;
+    _NODISCARD constexpr auto operator()(_Ty1&amp;&amp; _Left, _Ty2&amp;&amp; _Right) const
+        noexcept(noexcept(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) + static_cast&lt;_Ty2&amp;&amp;&gt;(_Right))) // strengthened
+        -&gt; decltype(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) + static_cast&lt;_Ty2&amp;&amp;&gt;(_Right)) {
+        return static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) + static_cast&lt;_Ty2&amp;&amp;&gt;(_Right);
+    }
+
+    using is_transparent = int;
+};
+
+template &lt;&gt;
+struct minus&lt;void&gt; {
+    template &lt;class _Ty1, class _Ty2&gt;
+    _NODISCARD constexpr auto operator()(_Ty1&amp;&amp; _Left, _Ty2&amp;&amp; _Right) const
+        noexcept(noexcept(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) - static_cast&lt;_Ty2&amp;&amp;&gt;(_Right))) // strengthened
+        -&gt; decltype(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) - static_cast&lt;_Ty2&amp;&amp;&gt;(_Right)) {
+        return static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) - static_cast&lt;_Ty2&amp;&amp;&gt;(_Right);
+    }
+
+    using is_transparent = int;
+};
+
+template &lt;&gt;
+struct multiplies&lt;void&gt; {
+    template &lt;class _Ty1, class _Ty2&gt;
+    _NODISCARD constexpr auto operator()(_Ty1&amp;&amp; _Left, _Ty2&amp;&amp; _Right) const
+        noexcept(noexcept(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) * static_cast&lt;_Ty2&amp;&amp;&gt;(_Right))) // strengthened
+        -&gt; decltype(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) * static_cast&lt;_Ty2&amp;&amp;&gt;(_Right)) {
+        return static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) * static_cast&lt;_Ty2&amp;&amp;&gt;(_Right);
+    }
+
+    using is_transparent = int;
+};
+
+template &lt;&gt;
+struct equal_to&lt;void&gt; {
+    template &lt;class _Ty1, class _Ty2&gt;
+    _NODISCARD constexpr auto operator()(_Ty1&amp;&amp; _Left, _Ty2&amp;&amp; _Right) const
+        noexcept(noexcept(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) == static_cast&lt;_Ty2&amp;&amp;&gt;(_Right))) // strengthened
+        -&gt; decltype(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) == static_cast&lt;_Ty2&amp;&amp;&gt;(_Right)) {
+        return static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) == static_cast&lt;_Ty2&amp;&amp;&gt;(_Right);
+    }
+
+    using is_transparent = int;
+};
+
+template &lt;&gt;
+struct not_equal_to&lt;void&gt; {
+    template &lt;class _Ty1, class _Ty2&gt;
+    _NODISCARD constexpr auto operator()(_Ty1&amp;&amp; _Left, _Ty2&amp;&amp; _Right) const
+        noexcept(noexcept(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) != static_cast&lt;_Ty2&amp;&amp;&gt;(_Right))) // strengthened
+        -&gt; decltype(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) != static_cast&lt;_Ty2&amp;&amp;&gt;(_Right)) {
+        return static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) != static_cast&lt;_Ty2&amp;&amp;&gt;(_Right);
+    }
+
+    using is_transparent = int;
+};
+
+template &lt;&gt;
+struct greater&lt;void&gt; {
+    template &lt;class _Ty1, class _Ty2&gt;
+    _NODISCARD constexpr auto operator()(_Ty1&amp;&amp; _Left, _Ty2&amp;&amp; _Right) const
+        noexcept(noexcept(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &gt; static_cast&lt;_Ty2&amp;&amp;&gt;(_Right))) // strengthened
+        -&gt; decltype(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &gt; static_cast&lt;_Ty2&amp;&amp;&gt;(_Right)) {
+        return static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &gt; static_cast&lt;_Ty2&amp;&amp;&gt;(_Right);
+    }
+
+    using is_transparent = int;
+};
+
+template &lt;&gt;
+struct less&lt;void&gt; {
+    template &lt;class _Ty1, class _Ty2&gt;
+    _NODISCARD constexpr auto operator()(_Ty1&amp;&amp; _Left, _Ty2&amp;&amp; _Right) const
+        noexcept(noexcept(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &lt; static_cast&lt;_Ty2&amp;&amp;&gt;(_Right))) // strengthened
+        -&gt; decltype(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &lt; static_cast&lt;_Ty2&amp;&amp;&gt;(_Right)) {
+        return static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &lt; static_cast&lt;_Ty2&amp;&amp;&gt;(_Right);
+    }
+
+    using is_transparent = int;
+};
+
+template &lt;&gt;
+struct greater_equal&lt;void&gt; {
+    template &lt;class _Ty1, class _Ty2&gt;
+    _NODISCARD constexpr auto operator()(_Ty1&amp;&amp; _Left, _Ty2&amp;&amp; _Right) const
+        noexcept(noexcept(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &gt;= static_cast&lt;_Ty2&amp;&amp;&gt;(_Right))) // strengthened
+        -&gt; decltype(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &gt;= static_cast&lt;_Ty2&amp;&amp;&gt;(_Right)) {
+        return static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &gt;= static_cast&lt;_Ty2&amp;&amp;&gt;(_Right);
+    }
+
+    using is_transparent = int;
+};
+
+template &lt;&gt;
+struct less_equal&lt;void&gt; {
+    template &lt;class _Ty1, class _Ty2&gt;
+    _NODISCARD constexpr auto operator()(_Ty1&amp;&amp; _Left, _Ty2&amp;&amp; _Right) const
+        noexcept(noexcept(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &lt;= static_cast&lt;_Ty2&amp;&amp;&gt;(_Right))) // strengthened
+        -&gt; decltype(static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &lt;= static_cast&lt;_Ty2&amp;&amp;&gt;(_Right)) {
+        return static_cast&lt;_Ty1&amp;&amp;&gt;(_Left) &lt;= static_cast&lt;_Ty2&amp;&amp;&gt;(_Right);
+    }
+
+    using is_transparent = int;
+};
+
+_EXPORT_STD template &lt;class _Ty&gt;
+<span style = "background-color:#dfd">_NODISCARD constexpr _Ty* addressof(_Ty&amp; _Val) noexcept {
+    return __builtin_addressof(_Val);
+}</span>
+
+_EXPORT_STD template &lt;class _Ty&gt;
+const _Ty* addressof(const _Ty&amp;&amp;) = delete;
+
+template &lt;class _Ptrty&gt;
+_NODISCARD constexpr auto _Unfancy(_Ptrty _Ptr) noexcept { // converts from a fancy pointer to a plain pointer
+    return _STD addressof(*_Ptr);
+}
+
+template &lt;class _Ty&gt;
+<span style = "background-color:#fdd">_NODISCARD constexpr _Ty* _Unfancy(_Ty* _Ptr) noexcept { // do nothing for plain pointers
+    return _Ptr;
+}</span>
+_STD_END
+
+#define _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) FUNC(__cdecl, OPT1, OPT2, OPT3)
+
+#ifdef _M_CEE
+#define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
+
+#else // _M_CEE
+#define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
+#endif // _M_CEE
+
+#if defined(_M_IX86) &amp;&amp; !defined(_M_CEE)
+#define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)
+
+#else // defined(_M_IX86) &amp;&amp; !defined(_M_CEE)
+#define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3)
+#endif // defined(_M_IX86) &amp;&amp; !defined(_M_CEE)
+
+#ifdef _M_IX86
+#define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
+#define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
+
+#else // _M_IX86
+#define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)
+#define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
+#endif // _M_IX86
+
+#if ((defined(_M_IX86) &amp;&amp; _M_IX86_FP &gt;= 2) || defined(_M_X64)) &amp;&amp; !defined(_M_CEE)
+#define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
+
+#else // defined(_M_IX86) &amp;&amp; _M_IX86_FP &gt;= 2 etc.
+#define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3)
+#endif // defined(_M_IX86) &amp;&amp; _M_IX86_FP &gt;= 2 etc.
+
+#define _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
+    _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)          \
+    _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
+    _EMIT_FASTCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)       \
+    _EMIT_STDCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
+    _EMIT_VECTORCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
+
+#define _NON_MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)    \
+    _NON_MEMBER_CALL(FUNC, , REF_OPT, NOEXCEPT_OPT)         \
+    _NON_MEMBER_CALL(FUNC, const, REF_OPT, NOEXCEPT_OPT)    \
+    _NON_MEMBER_CALL(FUNC, volatile, REF_OPT, NOEXCEPT_OPT) \
+    _NON_MEMBER_CALL(FUNC, const volatile, REF_OPT, NOEXCEPT_OPT)
+
+#define _NON_MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT) \
+    _NON_MEMBER_CALL_CV(FUNC, , NOEXCEPT_OPT)       \
+    _NON_MEMBER_CALL_CV(FUNC, &amp;, NOEXCEPT_OPT)      \
+    _NON_MEMBER_CALL_CV(FUNC, &amp;&amp;, NOEXCEPT_OPT)
+
+#ifdef __cpp_noexcept_function_type
+#define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
+    _NON_MEMBER_CALL_CV_REF(FUNC, )            \
+    _NON_MEMBER_CALL_CV_REF(FUNC, noexcept)
+#else // __cpp_noexcept_function_type
+#define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _NON_MEMBER_CALL_CV_REF(FUNC, )
+#endif // __cpp_noexcept_function_type
+
+#define _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
+    _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)      \
+    _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)    \
+    _EMIT_FASTCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)   \
+    _EMIT_STDCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)    \
+    _EMIT_THISCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)   \
+    _EMIT_VECTORCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
+
+#define _MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)    \
+    _MEMBER_CALL(FUNC, , REF_OPT, NOEXCEPT_OPT)         \
+    _MEMBER_CALL(FUNC, const, REF_OPT, NOEXCEPT_OPT)    \
+    _MEMBER_CALL(FUNC, volatile, REF_OPT, NOEXCEPT_OPT) \
+    _MEMBER_CALL(FUNC, const volatile, REF_OPT, NOEXCEPT_OPT)
+
+#define _MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT) \
+    _MEMBER_CALL_CV(FUNC, , NOEXCEPT_OPT)       \
+    _MEMBER_CALL_CV(FUNC, &amp;, NOEXCEPT_OPT)      \
+    _MEMBER_CALL_CV(FUNC, &amp;&amp;, NOEXCEPT_OPT)
+
+#ifdef __cpp_noexcept_function_type
+#define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
+    _MEMBER_CALL_CV_REF(FUNC, )            \
+    _MEMBER_CALL_CV_REF(FUNC, noexcept)
+#else // __cpp_noexcept_function_type
+#define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _MEMBER_CALL_CV_REF(FUNC, )
+#endif // __cpp_noexcept_function_type
+
+#ifdef __cpp_noexcept_function_type
+#define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
+    CLASS(_EMPTY_ARGUMENT)                   \
+    CLASS(const)                             \
+    CLASS(volatile)                          \
+    CLASS(const volatile)                    \
+    CLASS(&amp;)                                 \
+    CLASS(const&amp;)                            \
+    CLASS(volatile&amp;)                         \
+    CLASS(const volatile&amp;)                   \
+    CLASS(&amp;&amp;)                                \
+    CLASS(const&amp;&amp;)                           \
+    CLASS(volatile&amp;&amp;)                        \
+    CLASS(const volatile&amp;&amp;)                  \
+    CLASS(noexcept)                          \
+    CLASS(const noexcept)                    \
+    CLASS(volatile noexcept)                 \
+    CLASS(const volatile noexcept)           \
+    CLASS(&amp;noexcept)                         \
+    CLASS(const&amp; noexcept)                   \
+    CLASS(volatile&amp; noexcept)                \
+    CLASS(const volatile&amp; noexcept)          \
+    CLASS(&amp;&amp;noexcept)                        \
+    CLASS(const&amp;&amp; noexcept)                  \
+    CLASS(volatile&amp;&amp; noexcept)               \
+    CLASS(const volatile&amp;&amp; noexcept)
+#else // __cpp_noexcept_function_type
+#define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
+    CLASS(_EMPTY_ARGUMENT)                   \
+    CLASS(const)                             \
+    CLASS(volatile)                          \
+    CLASS(const volatile)                    \
+    CLASS(&amp;)                                 \
+    CLASS(const&amp;)                            \
+    CLASS(volatile&amp;)                         \
+    CLASS(const volatile&amp;)                   \
+    CLASS(&amp;&amp;)                                \
+    CLASS(const&amp;&amp;)                           \
+    CLASS(volatile&amp;&amp;)                        \
+    CLASS(const volatile&amp;&amp;)
+#endif // __cpp_noexcept_function_type
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _XSTDDEF_</pre>
+        <hr />
+        <table width="100%">
+            <thead>
+                <tr>
+                    <th align="center">
+                        <small>Generated by</small>
+                        <a href="https://github.com/OpenCppCoverage/OpenCppCoverage/releases">
+                            <strong>OpenCppCoverage (Version: 0.9.9.0)</strong>
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </body>
+</html>

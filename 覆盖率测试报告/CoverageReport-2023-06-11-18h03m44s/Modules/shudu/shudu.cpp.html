@@ -1,0 +1,341 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+        <meta charset="utf-8"/>
+	    <title>shudu.cpp</title>
+	    <link href="../../third-party/google-code-prettify/prettify-CppCoverage.css" type="text/css" rel="stylesheet" />
+	    <script type="text/javascript" src="../../third-party/google-code-prettify/prettify.js"></script>
+	</head>
+    <body onload="prettyPrint()">
+        <h4></h4>
+        <pre class="prettyprint lang-cpp linenums">
+#include&lt;fstream&gt;
+#include&lt;iostream&gt; 
+#include&lt;cstdio&gt;
+#include&lt;cstdlib&gt;
+#include&lt;ctime&gt;
+#include&lt;math.h&gt; 
+#include&lt;cstring&gt;
+#include&lt;random&gt;
+using namespace std;
+
+int n = 0; //ÒªÉú³ÉµÄÊý¶ÀÖÕ¾Ö¸öÊý 
+char a[10][10]; //Êý¶À¾ØÕó 
+double list[10]; //ÓÃ×÷±£´æÉú³ÉµÄËæ»ú¸¡µãÊý 
+int vis_code[10]; //±àÂëÊ±±ê¼Çµ±Ç°ÐòºÅÊÇ·ñ±»±àÂë¹ý 
+char move1[10][5] = { "036","063" }; //ÒÆ¶¯¹æÔò 
+char move2[10][5] = { "258","285","528","582","852","825" };
+char move3[10][5] = { "147","174","417","471","714","741" };
+char move_boss[10]; //ÅÅÁÐ×éºÏ³öµÄÒ»¸öÐòÁÐ 
+int move_boss_int[10]; //ÅÅÁÐ×éºÏ³öÐòÁÐµÄÕûÐÍ°æ 
+const double low = -30, high = 30; //Î¬¶ÈËæ»úÊýµÄÉÏÏÂ½ç
+
+char Print_Data[200000000];
+char vis[3][10][10];
+bool Found_Ans = false;
+bool Is_First_Task = true;
+
+<span style = "background-color:#dfd">ofstream OutputFile("shudu.txt");
+ofstream OutputFileSolveSudoku("answer.txt");</span>
+
+double Rand(double lowwer, double upper) //Ëæ»úÊýº¯Êý 
+<span style = "background-color:#fdd">{</span>
+
+<span style = "background-color:#fdd">	return (rand() / (double)RAND_MAX) * ((upper)-(lowwer)) + (lowwer);
+}</span>
+
+void transform(double* temp1)  //±àÂë 
+<span style = "background-color:#fdd">{
+	memset(vis_code, 0, sizeof(vis_code));</span>
+	//Ã¿Ò»´ÎÕÒµ½Ò»¸öÎ¬ÊýÖÐµÄ×îÐ¡Öµ£¬´Ó×îÐ¡Öµ¿ªÊ¼Ë³Ðò¸³Öµi 
+	int min;
+<span style = "background-color:#fdd">	for (int i = 1; i &lt;= 9; i++)</span>
+	{
+<span style = "background-color:#fdd">		min = -1;
+		for (int j = 1; j &lt;= 8; j++)//ÕÒµ½×îÐ¡µÄÎ¬¶È </span>
+		{
+<span style = "background-color:#fdd">			if ((min == -1 || temp1[j] &lt; temp1[min]) &amp;&amp; vis_code[j] == 0)
+				min = j;
+		}//minÎªµ±Ç°×îÐ¡Î¬¶È 
+		if (i != 8)
+			a[1][min + 1] = i + '0'; //½«µ±Ç°×îÐ¡Î¬¶ÈµÄÔª¼þÐòºÅ¸³ÖµÎªi </span>
+		else
+<span style = "background-color:#fdd">			a[1][min + 1] = i + 1 + '0';
+		vis_code[min] = 1;
+	}
+}</span>
+
+void Initial()  //³õÊ¼»¯µÚÒ»ÐÐµÄÊý¶À 
+<span style = "background-color:#fdd">{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution&lt;int&gt; dis(1, 9);</span>
+
+<span style = "background-color:#fdd">	a[1][1] = dis(gen) + '0';</span>
+
+<span style = "background-color:#fdd">	srand((unsigned)(time(NULL) + rand()));
+	for (int j = 1; j &lt;= 8; j++)
+		list[j] = Rand(low, high); //Éú³É¾Å¸öËæ»ú¸¡µãÊý 
+	transform(list); //Éú³ÉÁËÒ»¸öÊý¶ÀÖÕ¾ÖµÚÒ»ÐÐËæ»úÐòÁÐ 
+}</span>
+
+void To_int() //½«Ò»¸ö×Ö·ûÐòÁÐ×ª»»³ÉÕûÊýÐòÁÐ 
+<span style = "background-color:#fdd">{
+	for (int i = 0; i &lt; 9; i++)
+		move_boss_int[i] = move_boss[i] - '0';
+}</span>
+
+void Print_Sudoku(int tag)
+<span style = "background-color:#fdd">{
+	int pos = 0;
+	if (tag == 1) //Éú³ÉÊý¶ÀÖÕ¾ÖµÄÊä³ö </span>
+	{
+<span style = "background-color:#fdd">		for (int i = 1; i &lt;= 9; i++)</span>
+		{
+<span style = "background-color:#fdd">			for (int j = 1; j &lt;= 9; j++)</span>
+			{
+<span style = "background-color:#fdd">				if (j != 9)</span>
+				{
+<span style = "background-color:#fdd">					Print_Data[pos++] = a[i][j];
+					Print_Data[pos++] = ' ';//´æÈë¿Õ¸ñ	
+				}</span>
+				else
+<span style = "background-color:#fdd">					Print_Data[pos++] = a[i][j];
+			}
+			Print_Data[pos++] = '\n';//´æÈë»»ÐÐ·û
+		}
+		Print_Data[pos++] = '\n';
+		OutputFile &lt;&lt; Print_Data; //Ò»¸öÊý¶ÀÖÕ¾ÖÕûÌåÒÔ×Ö·û´®µÄÐÎÊ½Êä³ö
+	}
+	else if (tag == 2) //Çó½âÊý¶ÀµÄÊä³ö </span>
+	{
+<span style = "background-color:#fdd">		if (Is_First_Task == false) //Èç¹û²»ÊÇµÚÒ»¸öÎÊÌâ£¬¾ÍÔÚÇó½âÖ®Ç°Êä³öÒ»ÐÐ¿ÕÐÐ 
+			OutputFileSolveSudoku &lt;&lt; endl; //Èû½øÈ¥ </span>
+		else
+<span style = "background-color:#fdd">			Is_First_Task = false;
+		for (int i = 0; i &lt; 9; i++)</span>
+		{
+<span style = "background-color:#fdd">			for (int j = 0; j &lt; 9; j++)</span>
+			{
+<span style = "background-color:#fdd">				if (j != 9)</span>
+				{
+<span style = "background-color:#fdd">					Print_Data[pos++] = a[i][j];
+					Print_Data[pos++] = ' ';//´æÈë¿Õ¸ñ	
+				}</span>
+				else
+<span style = "background-color:#fdd">					Print_Data[pos++] = a[i][j];
+			}
+			Print_Data[pos++] = '\n';//´æÈë»»ÐÐ·û
+		}
+		OutputFileSolveSudoku &lt;&lt; Print_Data; //Ò»¸öÊý¶ÀÖÕ¾ÖÕûÌåÒÔ×Ö·û´®µÄÐÎÊ½Êä³ö
+		cout &lt;&lt; "Êý¶ÀµÄ½âÒÑ±£´æÖÁanswer.txtÖÐ£¡" &lt;&lt; endl;</span>
+	}
+<span style = "background-color:#fdd">}</span>
+
+void Produce_Sudoku(int DEMAND)
+<span style = "background-color:#fdd">{
+	int count = 0;
+	for (int i = 0; i &lt; 2; i++) //¹²¿ÉÒÔÉú³É72ÖÖ²»Í¬µÄÅÅÐò·½Ê½ </span>
+	{
+<span style = "background-color:#fdd">		for (int j = 0; j &lt; 6; j++)</span>
+		{
+<span style = "background-color:#fdd">			for (int k = 0; k &lt; 6; k++)</span>
+			{
+				char s1[15], s2[15];
+<span style = "background-color:#fdd">				strcpy_s(s1, sizeof(s1), move1[i]);
+				strcpy_s(s2, sizeof(s2), move2[j]);
+				strcat_s(s1, sizeof(s1), s2);
+				strcat_s(s1, sizeof(s1), move3[k]);
+				strcpy_s(move_boss, sizeof(move_boss), s1);
+				To_int(); //½«×Ö·ûÐÍÐòÁÐ×ª»»ÎªintÐÍ 
+				for (int q = 2; q &lt;= 9; q++) //ÖðÐÐÉú³ÉÒ»¸öÊý¶À¾ØÕó </span>
+				{
+<span style = "background-color:#fdd">					for (int w = 1; w &lt;= 9; w++)</span>
+					{
+<span style = "background-color:#fdd">						int m = (w - move_boss_int[q - 1] + 9) % 9;
+						if (m == 0) //¶ÔÓ¦×îºóÒ»ÁÐµÄÇé¿öÐèÒªÌØÊâ´¦Àí 
+							m = 9;
+						a[q][w] = a[1][m];
+					}
+				}
+				++count;
+				Print_Sudoku(1);
+				if (count == DEMAND)//Èç¹ûÂú×ãÁËÕâÒ»ÂÖµÄÐèÇó£¬¾ÍÍË³ö 
+					return;
+			}
+		}
+	}
+}</span>
+
+void Set_Vis(int r, int c, int num)
+<span style = "background-color:#fdd">{
+	vis[0][r][num] = 1;
+	vis[1][c][num] = 1;
+	vis[2][r / 3 * 3 + c / 3][num] = 1;
+}</span>
+
+void Reset_Vis(int r, int c, int num)
+<span style = "background-color:#fdd">{
+	vis[0][r][num] = 0;
+	vis[1][c][num] = 0;
+	vis[2][r / 3 * 3 + c / 3][num] = 0;
+}</span>
+
+bool Check_Vis(int r, int c, int num) //¼ì²é¿É²»¿ÉÒÔ·ÃÎÊ
+<span style = "background-color:#fdd">{</span>
+	if (vis[0][r][num] == 0
+		&amp;&amp; vis[1][c][num] == 0
+<span style = "background-color:#fdd">		&amp;&amp; vis[2][r / 3 * 3 + c / 3][num] == 0)
+		return true;</span>
+	else
+<span style = "background-color:#fdd">		return false;
+}</span>
+
+void Solve_Sudoku(int r, int c)
+<span style = "background-color:#fdd">{
+	while (a[r][c] != '0') //ÕÒµ½Ò»¸ö¿ÕµÄÊý¶ÀÎ»ÖÃ </span>
+	{
+<span style = "background-color:#fdd">		if (c &lt; 8)
+			c++;</span>
+		else //ÔÙÀ´Ò»ÂÖ 
+		{
+<span style = "background-color:#fdd">			c = 0;
+			r++;</span>
+		}
+<span style = "background-color:#fdd">		if (r == 9)	//ÕÒµ½ÁËÒ»¸ö´ð°¸¼´9x9Êý¶ÀÖÐÃ»ÓÐ0£¬ÄÇ¾ÍÊÇÕÒµ½ÁËÒ»¸ö½â´ð </span>
+		{
+<span style = "background-color:#fdd">			Found_Ans = true;
+			return; //×ßà¶ </span>
+		}
+<span style = "background-color:#fdd">	}</span>
+
+<span style = "background-color:#fdd">	bool Can_Search = false; //±ê¼Ç»ØËÝËã·¨ÖÐµ±Ç°½áµãÊÇ·ñ¿ÉÒÔËÑË÷
+	for (int i = 1; i &lt;= 9; i++)</span>
+	{
+<span style = "background-color:#fdd">		if (Check_Vis(r, c, i))</span>
+		{
+<span style = "background-color:#fdd">			Can_Search = true; //±ê¼Ç¿ÉÒÔËÑË÷ 
+			Set_Vis(r, c, i); //µ±Ç°½áµãËÑË÷¹ý 
+			a[r][c] = i + '0';
+			Solve_Sudoku(r, c);
+			if (Found_Ans) //¼ôÖ¦ 
+				return;
+			Can_Search = false;
+			Reset_Vis(r, c, i);
+			a[r][c] = '0';</span>
+		}
+<span style = "background-color:#fdd">	}
+}</span>
+
+int main(int argc, char* argv[])
+<span style = "background-color:#dfd">{
+	if (argc &lt; 3)</span>
+	{
+<span style = "background-color:#fdd">		cout &lt;&lt; "ÄúµÄÖ¸ÁîÓÐÎó£¡ÇëÔÚ¿ØÖÆÌ¨Ê¹ÓÃÕýÈ·µÄÖ¸ÁîÀ´ÔËÐÐ³ÌÐò¡£" &lt;&lt; endl;
+		cout &lt;&lt; "ÃüÁîÐÐÊäÈëshudu.exe -c N¿ÉÒÔÉú³ÉN¸öÊý¶ÀÖÕ¾ÖÎÄ¼þµ½shudu.txtÖÐ" &lt;&lt; endl;
+		cout &lt;&lt; "ÃüÁîÐÐÊäÈëshudu.exe -s file_path¿ÉÒÔÉú³É¶ÔÊý¶ÀÎÄ¼þfile_pathµÄ½âµ½answer.txtÖÐ" &lt;&lt; endl;
+		return 0;</span>
+	}
+	FILE* fp1;
+<span style = "background-color:#dfd">	errno_t err = fopen_s(&amp;fp1, argv[2], "r");</span>
+
+<span style = "background-color:#dfd">	if (strcmp(argv[1], "-s") == 0 &amp;&amp; fp1 == NULL)</span>
+	{
+<span style = "background-color:#fdd">		cout &lt;&lt; "ÄúµÄÖ¸ÁîÓÐÎó£¡ÇëÔÚ¿ØÖÆÌ¨Ê¹ÓÃÕýÈ·µÄÖ¸ÁîÀ´ÔËÐÐ³ÌÐò¡£" &lt;&lt; endl;
+		cout &lt;&lt; "ÃüÁîÐÐÊäÈëshudu.exe -c N¿ÉÒÔÉú³ÉN¸öÊý¶ÀÖÕ¾ÖÎÄ¼þµ½shudu.txtÖÐ" &lt;&lt; endl;
+		cout &lt;&lt; "ÃüÁîÐÐÊäÈëshudu.exe -s file_path¿ÉÒÔÉú³É¶ÔÊý¶ÀÎÄ¼þfile_pathµÄ½âµ½answer.txtÖÐ" &lt;&lt; endl;
+		return 0;</span>
+	}
+<span style = "background-color:#dfd">	if (argc == 3 &amp;&amp; strcmp(argv[1], "-c") == 0)</span>
+	{
+<span style = "background-color:#fdd">		int len = static_cast&lt;int&gt;(strlen(argv[2]));//½«ÃüÁîÐÐ×Ö·û´®×ª»»ÎªÕûÊý 
+		for (int i = 0; i &lt; len; i++)</span>
+		{
+<span style = "background-color:#fdd">			if (argv[2][i] &gt;= '0' &amp;&amp; argv[2][i] &lt;= '9')</span>
+			{
+<span style = "background-color:#fdd">				int value = argv[2][i] - '0';
+				for (int j = 1; j &lt;= len - 1; j++)
+					value *= 10;
+				n += value;
+			}</span>
+			else
+			{
+<span style = "background-color:#fdd">				cout &lt;&lt; "ÄúÊäÈëµÄÊý×ÖÓÐÎó£¬ÇëÊäÈë1-1000000Ö®¼äµÄÊý£¡" &lt;&lt; endl;
+				return 0;</span>
+			}
+<span style = "background-color:#fdd">		}
+		if (n &gt; 1000000 || n &lt;= 0)</span>
+		{
+<span style = "background-color:#fdd">			cout &lt;&lt; "ÄúÊäÈëµÄÊý×ÖÓÐÎó£¬ÇëÊäÈë1-1000000Ö®¼äµÄÊý£¡" &lt;&lt; endl;
+			return 0;</span>
+		}
+		int round; //ÐèÒªÉú³ÉÊý¶ÀÖÕ¾ÖµÄÂÖÊý£¬Ò»ÂÖÉú³É72¸ö
+<span style = "background-color:#fdd">		if (n &lt;= 72)
+			round = 1;</span>
+		else
+<span style = "background-color:#fdd">			round = n / 72 + 1;
+		while (round)</span>
+		{
+			int demand; //Ã¿Ò»ÂÖÐèÒªÉú³ÉµÄ¾ØÕóÊý 
+<span style = "background-color:#fdd">			Initial(); //³õÊ¼»¯Êý¶ÀµÄµÚÒ»ÐÐ 
+			if (round != 1) //²»ÊÇ×îºóÒ»ÂÖ 
+				demand = 72;</span>
+			else //ÊÇ×îºóÒ»ÂÖ 
+<span style = "background-color:#fdd">				demand = n % 72;
+			Produce_Sudoku(demand);
+			--round;
+		}
+		cout &lt;&lt; "ÒÑ³É¹¦Éú³É" &lt;&lt; n &lt;&lt; "¸öÊý¶ÀÖÕ¾Ö±£´æÖÁshudu.txtÖÐ" &lt;&lt; endl;
+	}</span>
+<span style = "background-color:#dfd">	else if (argc == 3 &amp;&amp; strcmp(argv[1], "-s") == 0)</span>
+	{
+		char buf[110];
+<span style = "background-color:#dfd">		int count = 0;
+		while (fgets(buf, 20, fp1))</span>
+		{
+<span style = "background-color:#fdd">			if (strcmp(buf, "\n") == 0) //Óö¿ÕÐÐÌø¹ý 
+				continue;
+			for (int i = 0; i &lt;= 16; i++)</span>
+			{
+<span style = "background-color:#fdd">				if (i % 2 == 0)</span>
+				{	
+<span style = "background-color:#fdd">					if (buf[i] == '$') {
+						buf[i] = '0';</span>
+					}
+<span style = "background-color:#fdd">					a[count][i / 2] = buf[i];
+					Set_Vis(count, i / 2, buf[i] - '0');</span>
+				}
+<span style = "background-color:#fdd">			}
+			count++;
+			if (count == 9)</span>
+			{
+<span style = "background-color:#fdd">				Found_Ans = false;
+				Solve_Sudoku(0, 0); //»ØËÝ½âÊý¶À 
+				Print_Sudoku(2);
+				memset(vis, 0, sizeof(vis));
+				count = 0;</span>
+			}
+<span style = "background-color:#fdd">		}</span>
+<span style = "background-color:#dfd">	}</span>
+	else {
+<span style = "background-color:#fdd">		cout &lt;&lt; "ÄúµÄÖ¸ÁîÓÐÎó£¡ÇëÔÚ¿ØÖÆÌ¨Ê¹ÓÃÕýÈ·µÄÖ¸ÁîÀ´ÔËÐÐ³ÌÐò¡£" &lt;&lt; endl;
+		cout &lt;&lt; "ÃüÁîÐÐÊäÈëshudu.exe -c N¿ÉÒÔÉú³ÉN¸öÊý¶ÀÖÕ¾ÖÎÄ¼þµ½shudu.txtÖÐ" &lt;&lt; endl;
+		cout &lt;&lt; "ÃüÁîÐÐÊäÈëshudu.exe -s file_path¿ÉÒÔÉú³É¶ÔÊý¶ÀÎÄ¼þfile_pathµÄ½âµ½answer.txtÖÐ" &lt;&lt; endl;</span>
+	}
+<span style = "background-color:#dfd">	return 0;
+}</span></pre>
+        <hr />
+        <table width="100%">
+            <thead>
+                <tr>
+                    <th align="center">
+                        <small>Generated by</small>
+                        <a href="https://github.com/OpenCppCoverage/OpenCppCoverage/releases">
+                            <strong>OpenCppCoverage (Version: 0.9.9.0)</strong>
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </body>
+</html>
